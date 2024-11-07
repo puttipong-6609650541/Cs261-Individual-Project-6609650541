@@ -29,6 +29,7 @@ async function submitLogin() {
 
         // ตรวจสอบสถานะการตอบกลับ
         if (!response.ok) {
+            alert('ล็อคอินไม่สำเร็จ กรุณาตรวจสอบชื่อผู้ใช้หรือรหัสผ่านอีกครั้ง')
             throw new Error('ล็อคอินไม่สำเร็จ โปรดตรวจสอบชื่อผู้ใช้หรือรหัสผ่านอีกครั้ง');
         }
 
@@ -47,9 +48,39 @@ async function submitLogin() {
         document.getElementById('email').innerText = 'Email : ' + data.email;
         document.getElementById('department').innerText = 'หลักสูตร : ' + data.department;
         document.getElementById('faculty').innerText = 'คณะ : ' + data.faculty;
+        
+        await saveStudentData(data);
     } catch (error) {
         // แสดงข้อความแสดงข้อผิดพลาด
         document.getElementById('message').innerText = error.message;
+    }
+}
+
+async function saveStudentData(Student) {
+    console.log('Preparing to send data:', Student); // ตรวจสอบว่าข้อมูลกำลังจะถูกส่งหรือไม่
+    try {
+        const response = await fetch('http://localhost:8080/students/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userName: Student.username,
+                engName: Student.displayname_en,
+                email: Student.email,
+                faculty: Student.faculty,
+                type: Student.type
+            })
+        });
+
+        console.log('Response received'); // ตรวจสอบว่ามีการตอบกลับจากเซิร์ฟเวอร์หรือไม่
+        if (!response.ok) {
+            throw new Error('ไม่สามารถบันทึกข้อมูลได้ โปรดลองอีกครั้ง');
+        }
+
+        console.log('ข้อมูลนักศึกษาถูกบันทึกสำเร็จ');
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', error.message);
     }
 }
 
